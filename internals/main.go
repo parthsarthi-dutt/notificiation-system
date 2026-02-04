@@ -3,11 +3,13 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	redisclient "internals/redis"
+	api "internals/api"
+	"log"
 	"net/http"
 	"strconv"
 	"sync"
-	"github.com/parthsarthi-dutt/notification-system/internals/redis"
-	"log"
+	
 )
 
 type User struct{
@@ -22,12 +24,18 @@ var cacheMutex sync.RWMutex
 
 func main() {
 
-
-	log.Println("Starting service...")
+log.Println("Starting service...")
 
 	redisclient.InitRedis()
 
-	log.Println("Service started successfully")
+	mux := http.NewServeMux()
+	mux.HandleFunc("/set", api.SetHandler)
+	mux.HandleFunc("/get", api.GetHandler)
+
+	log.Println("HTTP server running on :8080")
+	if err := http.ListenAndServe(":8080", mux); err != nil {
+		log.Fatal(err)
+	}
 }
 
 // func main() {
